@@ -97,6 +97,7 @@ public void OnClientPutInServer(int client)
 			fakecvar.ReplicateToClient(client, value);
 		}
 	}
+	delete Cvars_Snapshot;
 }
 
 bool LoadConfiguration(const char[] path)
@@ -105,15 +106,15 @@ bool LoadConfiguration(const char[] path)
 	char buffer[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, buffer, PLATFORM_MAX_PATH, path);
 
+	File file;
+
 	if (!FileExists(buffer))
 	{
-		delete OpenFile(buffer, "w");
+		delete (file = OpenFile(buffer, "w"));
 		return false;
 	}
 
-	File file = OpenFile(buffer, "r");
-
-	if (file == null)
+	if ((file = OpenFile(buffer, "r")) == null)
 	{
 		return false;
 	}
@@ -122,14 +123,6 @@ bool LoadConfiguration(const char[] path)
 	while (!file.EndOfFile() && file.ReadLine(buffer, PLATFORM_MAX_PATH))
 	{
 		if ((position = StrContains(buffer, "//")) != -1)
-		{
-			buffer[position] = '\0';
-		}
-		if ((position = StrContains(buffer, "#")) != -1)
-		{
-			buffer[position] = '\0';
-		}
-		if ((position = StrContains(buffer, ";")) != -1)
 		{
 			buffer[position] = '\0';
 		}
@@ -164,9 +157,9 @@ void PushToStringMap(char[] buffer)
 		return;
 	}
 
-	fakecvar.Flags &= ~FCVAR_REPLICATED;
+	fakecvar.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
 
-	ReplaceString(value, PLATFORM_MAX_PATH, "\"", "");
+	StripQuotes(value);
 	DataPack dp = new DataPack();
 	dp.WriteCell(fakecvar);
 	dp.WriteString(value);
