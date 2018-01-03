@@ -51,11 +51,6 @@ public void OnPluginStart()
 	Cvars = new StringMap();
 }
 
-public void OnPluginEnd()
-{
-	delete Cvars;
-}
-
 public void OnMapStart()
 {
 	LoadConfiguration("configs/fakecvars.cfg");
